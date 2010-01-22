@@ -10,22 +10,18 @@
 
 int write_log()
 {
-  // Get the load average.
   double loadavg [3];
-  if(getloadavg(loadavg, 3) == -1)
+  if (getloadavg(loadavg, 3) == -1)
     return -1;
-  // Get the machine name.
-  //struct utsname u_name;
-  //uname(&u_name);
   
   FILE *fp;
   fp = fopen(OUT_FILE_NAME, "a");
-  if(fp == NULL)
+  if (fp == NULL)
     return -1;
-  int error = fprintf(fp, "%ld %.2f %.2f %.2f\n",
-		      time(NULL), loadavg[0], loadavg[1], loadavg[2]);
+  fprintf(fp, "%ld %.2f %.2f %.2f\n",
+	  time(NULL), loadavg[0], loadavg[1], loadavg[2]);
   fclose(fp);
-  return error >= 0 ? 0 : -1;
+  return 0;
 }
 
 int write_lock_file(char *file_name)
@@ -44,7 +40,7 @@ int write_lock_file(char *file_name)
 int is_locked(char *file_name)
 {
   FILE *fp = fopen(file_name, "r");
-  if(fp != NULL)
+  if (fp != NULL)
   {
     int pid;
     fscanf(fp, "%d", &pid);
@@ -62,14 +58,15 @@ int unlock_file(char *file_name)
 
 void lock_file(char *file_name)
 {
-  while(is_locked(file_name))
+  while (is_locked(file_name))
     sleep(1);
   write_lock_file(file_name);      
 }
 
 int main()
 {
-  while(1){
+  while (1)
+  {
     lock_file(OUT_FILE_LOCK);
     write_log();
     unlock_file(OUT_FILE_LOCK);    
