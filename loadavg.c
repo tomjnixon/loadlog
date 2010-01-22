@@ -6,7 +6,7 @@
 #include <sys/sysinfo.h>
 #include <sys/utsname.h>
 #include "config.h"
-
+#include "loadavg.h"
 
 int write_log()
 {
@@ -14,13 +14,22 @@ int write_log()
   if (getloadavg(loadavg, 3) == -1)
     return -1;
   
-  FILE *fp;
-  fp = fopen(OUT_FILE_NAME, "a");
+  return write_log_entry(time(NULL), loadavg[0]);
+}
+
+int write_log_entry(long int time, double loadavg)
+{
+  lock_file(OUT_FILE_LOCK);
+  FILE * fp = fopen(OUT_FILE_NAME, "a");
   if (fp == NULL)
+  {
+    unlock_file(OUT_FILE_LOCK);
     return -1;
-  fprintf(fp, "%ld %.2f %.2f %.2f\n",
-	  time(NULL), loadavg[0], loadavg[1], loadavg[2]);
+  }
+  fprintf(fp, "%ld %.2f\n",
+	  time, loadavg);
   fclose(fp);
+  unlock_file(OUT_FILE_LOCK);
   return 0;
 }
 
@@ -67,9 +76,7 @@ int main()
 {
   while (1)
   {
-    lock_file(OUT_FILE_LOCK);
     write_log();
-    unlock_file(OUT_FILE_LOCK);    
     sleep(SLEEP_TIME);
   }
   return 0;
