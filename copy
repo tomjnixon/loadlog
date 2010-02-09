@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+
+tmp_dir="/tmp/loadavg"
+in_file_name="$tmp_dir/1min"
+out_file_dir="$HOME/loadavg"
+
+out_file_name="$out_file_dir/$(hostname).$(date +%s)"
+
+
+function lock_file()
+{
+    lock_file_name=$1
+
+    while [ -f $lock_file_name ]; do
+	sleep 1;
+    done
+    
+    echo $$ > $lock_file_name
+}
+
+function unlock_file()
+{
+    lock_file_name=$1
+
+    rm $lock_file_name
+}
+
+lock_file "${in_file_name}.pid"
+
+if [ -f "$in_file_name" ]; then
+    cp "$in_file_name" "$out_file_name"
+    rm "$in_file_name"
+fi
+
+unlock_file "${in_file_name}.pid"
+
+ps -e | grep loadavg > /dev/null || $tmp_dir/loadavg &
