@@ -13,5 +13,5 @@ cp $bin_dir/{loadavg,copy} $tmp_dir
 (crontab -l 2>/dev/null | grep -v "loadavg";
  echo "@hourly $tmp_dir/copy") | crontab -
 
-killall loadavg
+killall loadavg 2> /dev/null
 $tmp_dir/loadavg &
